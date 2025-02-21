@@ -40,6 +40,7 @@ class StratusScheduler:
             'price'
         ])
         
+        # updating to active instance counter
         self.instance_counter = 0
         self.price_counter = 0
         self.tasks = 0
@@ -59,6 +60,7 @@ class StratusScheduler:
 
         #free expired instances
         expired_instances = self.instance_bins[self.instance_bins['timestamp'] + self.instance_bins['runtime'] <= current_timestamp]
+        self.instance_counter -= len(expired_instances)
         self.instance_bins = self.instance_bins[~self.instance_bins.index.isin(expired_instances.index)]
 
         # Update utilization metrics
@@ -346,10 +348,10 @@ class StratusScheduler:
         total_memory = sum(task['memory_request'] for task in task_group)
         
         # Determine constraining resource
-        cpu_utilization = total_cpu / instance_type['capacity_CPU']
-        memory_utilization = total_memory / instance_type['capacity_memory']
+        a_cpu_utilization = total_cpu / instance_type['capacity_CPU']
+        a_memory_utilization = total_memory / instance_type['capacity_memory']
         
-        constraining_resource = max(cpu_utilization, memory_utilization)
+        constraining_resource = max(a_cpu_utilization, a_memory_utilization)
         
         # Calculate score
         return constraining_resource / instance_type['normalized_price']

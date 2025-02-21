@@ -38,6 +38,7 @@ class FirstFitScheduler:
             'price'
         ])
 
+        # updating to active instance counter
         self.instance_counter = 0
         self.price_counter = 0
         self.tasks = 0
@@ -141,6 +142,7 @@ class FirstFitScheduler:
         self.task_bins = self.task_bins[~self.task_bins.index.isin(expired_tasks.index)]
 
         expired_instances = self.instance_bins[self.instance_bins['timestamp'] + self.instance_bins['runtime'] <= current_timestamp]
+        self.instance_counter -= len(expired_instances)
         self.instance_bins = self.instance_bins[~self.instance_bins.index.isin(expired_instances.index)]
 
         # Update utilization metrics

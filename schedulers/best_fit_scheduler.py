@@ -38,6 +38,7 @@ class BestFitScheduler:
             'price'
         ])
 
+        # change to active instances
         self.instance_counter = 0
         self.price_counter = 0
         self.tasks = 0
@@ -141,6 +142,7 @@ class BestFitScheduler:
         self.task_bins = self.task_bins[~self.task_bins.index.isin(expired_tasks.index)]
 
         expired_instances = self.instance_bins[self.instance_bins['timestamp'] + self.instance_bins['runtime'] <= current_timestamp]
+        self.instance_counter -= len(expired_instances)
         self.instance_bins = self.instance_bins[~self.instance_bins.index.isin(expired_instances.index)]
 
         # Update utilization metrics
@@ -165,8 +167,11 @@ class BestFitScheduler:
             task_assigned = False
 
             # Iterate through all existing instances
-            closest_instance = None
-            closest_runtime_diff = float('inf')
+            # closest_instance = None
+            # closest_runtime_diff = float('inf')
+
+            best_instance = None
+            min_remaining_resources = float('inf')
 
             for _, instance in self.instance_bins.iterrows():
                 # Check if the instance can accommodate the task
@@ -174,18 +179,26 @@ class BestFitScheduler:
                     instance['CPU_capacity'] - instance['CPU_used'] >= task['CPU_request'] and
                     instance['memory_capacity'] - instance['memory_used'] >= task['memory_request']
                 ):
-                    remaining_runtime = instance['runtime'] - (
-                        task['timestamp'] - instance['timestamp']
-                    )
-                    runtime_diff = abs(remaining_runtime - task['runtime'])
+                    remaining_memory = instance['memory_capacity'] - instance['memory_used'] - task['memory_request']
+                    remaining_cpu = instance['CPU_capacity'] - instance['CPU_used'] - task['CPU_request']
+                    total_remaining_resources = remaining_cpu + remaining_memory
 
-                    if runtime_diff < closest_runtime_diff:
-                        closest_runtime_diff = runtime_diff
-                        closest_instance = instance
+                    if total_remaining_resources < min_remaining_resources:
+                        min_remaining_resources = total_remaining_resources
+                        best_instance = instance
+
+                    # remaining_runtime = instance['runtime'] - (
+                    #     task['timestamp'] - instance['timestamp']
+                    # )
+                    # runtime_diff = abs(remaining_runtime - task['runtime'])
+
+                    # if runtime_diff < closest_runtime_diff:
+                    #     closest_runtime_diff = runtime_diff
+                    #     closest_instance = instance
 
             # Assign to the closest instance if found
-            if closest_instance is not None:
-                self._assign_task_to_instance(task, closest_instance)
+            if best_instance is not None:
+                self._assign_task_to_instance(task, best_instance)
                 task_assigned = True
 
             # If no existing instance can accommodate the task, acquire a new instance
