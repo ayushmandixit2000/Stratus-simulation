@@ -200,15 +200,6 @@ class BestFitScheduler:
                         min_remaining_resources = total_remaining_resources
                         best_instance = instance
 
-                    # remaining_runtime = instance['runtime'] - (
-                    #     task['timestamp'] - instance['timestamp']
-                    # )
-                    # runtime_diff = abs(remaining_runtime - task['runtime'])
-
-                    # if runtime_diff < closest_runtime_diff:
-                    #     closest_runtime_diff = runtime_diff
-                    #     closest_instance = instance
-
             # Assign to the closest instance if found
             if best_instance is not None:
                 self._assign_task_to_instance(task, best_instance)

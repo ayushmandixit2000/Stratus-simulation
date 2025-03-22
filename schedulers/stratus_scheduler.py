@@ -374,3 +374,4 @@ class StratusScheduler:
         
         return (total_cpu <= instance_type['capacity_CPU'] and 
                 total_memory <= instance_type['capacity_memory'])
+
